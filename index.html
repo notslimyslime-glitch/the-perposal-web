@@ -49,7 +49,7 @@
       animation:soft-glow 1.5s ease-in-out infinite alternate;
     }
     #no.running {
-      position:fixed; z-index:5; margin:0; transform:none;
+      position:absolute; z-index:5; margin:0; transform:none;
       width:min(116px,calc(100vw - 24px)); min-width:0; max-width:calc(100vw - 24px);
       padding-left:12px; padding-right:12px;
       transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1);
@@ -102,48 +102,54 @@
       noButton.style.display = "none";
     }
 
+    // A dedicated viewport-sized playfield gives the button one stable
+    // coordinate system, independent of the animated card.
+    const playfield = document.createElement("div");
+    playfield.id = "no-playfield";
+    Object.assign(playfield.style, {
+      position: "fixed", inset: "0", width: "100vw", height: "100vh",
+      overflow: "hidden", pointerEvents: "none", zIndex: "10"
+    });
+    document.body.appendChild(playfield);
+
     function getPlayBounds() {
-      // Fixed-position coordinates use the layout viewport. Keep a safe margin
-      // and let the invisible play zone extend around the card, never past it.
+      const card = document.querySelector(".card").getBoundingClientRect();
       const width = document.documentElement.clientWidth;
       const height = document.documentElement.clientHeight;
-      const card = document.querySelector(".card").getBoundingClientRect();
-      const margin = 18;
-      const zonePaddingX = 120;
-      const zonePaddingY = 90;
+      const margin = 16;
+      // Invisible zone extends around the card, but is clipped to the viewport.
       return {
-        left: Math.max(margin, card.left - zonePaddingX),
-        top: Math.max(margin, card.top - zonePaddingY),
-        right: Math.min(width - margin, card.right + zonePaddingX),
-        bottom: Math.min(height - margin, card.bottom + zonePaddingY)
+        left: Math.max(margin, card.left - 110),
+        top: Math.max(margin, card.top - 85),
+        right: Math.min(width - margin, card.right + 110),
+        bottom: Math.min(height - margin, card.bottom + 85)
       };
+    }
+
+    function placeNoButton(x, y) {
+      noButton.style.left = `${Math.round(x)}px`;
+      noButton.style.top = `${Math.round(y)}px`;
     }
 
     function clampNoButton() {
       const bounds = getPlayBounds();
       const rect = noButton.getBoundingClientRect();
-      const minX = bounds.left;
-      const minY = bounds.top;
-      const maxX = Math.max(minX, bounds.right - rect.width);
-      const maxY = Math.max(minY, bounds.bottom - rect.height);
-      const x = Math.max(minX, Math.min(rect.left, maxX));
-      const y = Math.max(minY, Math.min(rect.top, maxY));
-      noButton.style.left = `${Math.round(x)}px`;
-      noButton.style.top = `${Math.round(y)}px`;
+      const maxX = Math.max(bounds.left, bounds.right - rect.width);
+      const maxY = Math.max(bounds.top, bounds.bottom - rect.height);
+      placeNoButton(
+        Math.max(bounds.left, Math.min(rect.left, maxX)),
+        Math.max(bounds.top, Math.min(rect.top, maxY))
+      );
     }
 
     function moveNoButton() {
       const bounds = getPlayBounds();
       const rect = noButton.getBoundingClientRect();
-      const minX = bounds.left;
-      const minY = bounds.top;
-      const maxX = Math.max(minX, bounds.right - rect.width);
-      const maxY = Math.max(minY, bounds.bottom - rect.height);
-      const x = minX + Math.random() * (maxX - minX);
-      const y = minY + Math.random() * (maxY - minY);
-      noButton.style.left = `${Math.round(x)}px`;
-      noButton.style.top = `${Math.round(y)}px`;
-      requestAnimationFrame(clampNoButton);
+      const maxX = Math.max(bounds.left, bounds.right - rect.width);
+      const maxY = Math.max(bounds.top, bounds.bottom - rect.height);
+      const x = bounds.left + Math.random() * (maxX - bounds.left);
+      const y = bounds.top + Math.random() * (maxY - bounds.top);
+      placeNoButton(x, y);
     }
 
     noButton.addEventListener("click", () => {
@@ -169,26 +175,21 @@
           const original = noButton.getBoundingClientRect();
           running = true;
 
-          // IMPORTANT: .card has a CSS transform animation. A fixed-position
-          // child of a transformed element is positioned relative to that card,
-          // not the browser window. Move the button to <body> before using
-          // viewport coordinates so its bounds are measured correctly.
-          document.body.appendChild(noButton);
+          // Move into the viewport playfield. The first position is exactly
+          // where the button was; movement happens only in response to clicks.
+          playfield.appendChild(noButton);
+          noButton.style.pointerEvents = "auto";
           noButton.classList.add("running");
-          noButton.style.left = `${original.left}px`;
-          noButton.style.top = `${original.top}px`;
-
-          requestAnimationFrame(() => {
-            clampNoButton();
-            moveNoButton();
-          });
+          placeNoButton(original.left, original.top);
+          requestAnimationFrame(clampNoButton);
+          moveNoButton();
         } else {
           moveNoButton();
         }
       }
     });
 
-    // Keep the button within the card's invisible play zone after resizing.
+    // Resizing only clamps the current location; it never triggers a new move.
     window.addEventListener("resize", () => {
       if (running) requestAnimationFrame(clampNoButton);
     });
