@@ -49,12 +49,13 @@
       animation:soft-glow 1.5s ease-in-out infinite alternate;
     }
     #no.running {
-      position:fixed; z-index:5; margin:0;
-      min-width:min(116px,calc(100vw - 16px)); max-width:calc(100vw - 16px);
+      position:fixed; z-index:5; margin:0; transform:none;
+      min-width:min(116px,calc(100vw - 24px)); max-width:calc(100vw - 24px);
       padding-left:12px; padding-right:12px;
-      transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1),transform .2s ease;
+      transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1);
       box-shadow:0 0 0 4px rgba(255,213,223,.55),0 0 24px 8px rgba(255,170,195,.95);
     }
+    #no.running:hover { transform:none; }
     #message { min-height:25px; margin:23px 0 0; color:#8e4055; font-family:Georgia,serif; font-size:17px; font-weight:bold; }
     .tiny-note { margin:12px 0 0; color:#b18a8f; font-size:11px; letter-spacing:.08em; }
     @keyframes pop-in { from { opacity:0; transform:translateY(18px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
@@ -101,6 +102,21 @@
       noButton.style.display = "none";
     }
 
+    function moveNoButton() {
+      // Measure the actual Chrome content viewport in CSS pixels.
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = document.documentElement.clientHeight;
+      const margin = 12;
+      const buttonWidth = noButton.offsetWidth;
+      const buttonHeight = noButton.offsetHeight;
+      const maxX = Math.max(margin, viewportWidth - buttonWidth - margin);
+      const maxY = Math.max(margin, viewportHeight - buttonHeight - margin);
+      const nextX = margin + Math.random() * Math.max(0, maxX - margin);
+      const nextY = margin + Math.random() * Math.max(0, maxY - margin);
+      noButton.style.left = `${Math.round(nextX)}px`;
+      noButton.style.top = `${Math.round(nextY)}px`;
+    }
+
     noButton.addEventListener("click", () => {
       noClicks += 1;
       const screens = [
@@ -114,22 +130,34 @@
         subtitle.textContent = screen[1];
         sticker.textContent = screen[2];
         message.textContent = "You can still choose No whenever you like.";
-      } else if (noClicks >= 4) {
+      } else {
         heading.textContent = "Haha, catch me if you can! 😄";
         subtitle.textContent = "The No button only moves when you click it!";
         sticker.textContent = "🙈";
         message.textContent = "Boop! It moved. Try catching it again!";
         if (!running) {
+          // Keep the button at its original spot for the first running frame.
+          const original = noButton.getBoundingClientRect();
           running = true;
           noButton.classList.add("running");
+          noButton.style.left = `${Math.max(12, Math.min(original.left, document.documentElement.clientWidth - noButton.offsetWidth - 12))}px`;
+          noButton.style.top = `${Math.max(12, Math.min(original.top, document.documentElement.clientHeight - noButton.offsetHeight - 12))}px`;
+          requestAnimationFrame(moveNoButton);
+        } else {
+          moveNoButton();
         }
-        const maxX = Math.max(8, window.innerWidth - noButton.offsetWidth - 8);
-        const maxY = Math.max(8, window.innerHeight - noButton.offsetHeight - 8);
-        noButton.style.left = `${Math.floor(Math.random() * (maxX + 1))}px`;
-        noButton.style.top = `${Math.floor(Math.random() * (maxY + 1))}px`;
-      } else {
-        sayNo();
       }
+    });
+
+    // If Chrome is resized while the button is running, clamp it back into view.
+    window.addEventListener("resize", () => {
+      if (!running) return;
+      const width = document.documentElement.clientWidth;
+      const height = document.documentElement.clientHeight;
+      const x = Math.max(12, Math.min(parseFloat(noButton.style.left) || 12, width - noButton.offsetWidth - 12));
+      const y = Math.max(12, Math.min(parseFloat(noButton.style.top) || 12, height - noButton.offsetHeight - 12));
+      noButton.style.left = `${x}px`;
+      noButton.style.top = `${y}px`;
     });
   </script>
 </body>
