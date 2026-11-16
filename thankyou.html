@@ -24,8 +24,14 @@
     h1 { margin:8px 0 12px; font: bold clamp(32px,8vw,46px)/1.12 Georgia,serif; }
     .poem { margin:14px auto 20px; color:#81515b; font:18px/1.75 Georgia,serif; }
     .gif { display:block; width:min(100%,230px); max-height:220px; object-fit:contain; margin:0 auto 8px; border-radius:18px; }
-    .back { display:inline-block; margin-top:14px; padding:12px 22px; border-radius:999px;
-      color:white; background:var(--wine); text-decoration:none; font-weight:800; }
+    .surprise {
+      margin-top:14px; padding:13px 24px; border:0; border-radius:999px;
+      color:white; background:var(--wine); font:800 15px "Trebuchet MS","Segoe UI",sans-serif;
+      cursor:pointer; box-shadow:0 4px 0 #35101e; transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .surprise:hover { transform:translateY(-2px); box-shadow:0 6px 0 #35101e; }
+    .surprise:active { transform:translateY(2px); box-shadow:0 2px 0 #35101e; }
+    .surprise-note { margin:16px 0 0; color:#a34c68; font-weight:800; animation:pop .35s ease both; }
     .balloon {
       position:fixed; z-index:1; bottom:-130px; width:34px; height:44px; border-radius:50% 50% 46% 46%;
       opacity:0; animation:float-up 5.5s ease-in forwards; pointer-events:none;
@@ -54,12 +60,20 @@
     </p>
     <img class="gif" src="200.gif" alt="Cute happy crying face making a heart with its hands">
     <p class="poem">Sending you a pocketful of joy! 🌷</p>
+    <button class="surprise" id="surpriseButton" type="button">A little surprise ✨</button>
+    <p class="surprise-note" id="surpriseNote" hidden>You deserve all the happy little things! 💖</p>
   </main>
   <script>
     // Balloons animate once on page load, with no repeating loop.
     document.querySelectorAll(".balloon").forEach(balloon => {
       balloon.addEventListener("animationend", () => balloon.remove(), { once:true });
     });
+
+    document.getElementById("surpriseButton").addEventListener("click", () => {
+      const note = document.getElementById("surpriseNote");
+      note.hidden = false;
+      document.getElementById("surpriseButton").textContent = "Surprise opened! 💗";
+    }, { once:true });
   </script>
 </body>
 </html>
