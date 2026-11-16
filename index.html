@@ -112,18 +112,19 @@
     });
     document.body.appendChild(playfield);
 
-    function getPlayBounds() {
+    function getPlayZones() {
       const card = document.querySelector(".card").getBoundingClientRect();
       const width = document.documentElement.clientWidth;
       const height = document.documentElement.clientHeight;
-      const margin = 16;
-      // Invisible zone extends around the card, but is clipped to the viewport.
-      return {
-        left: Math.max(margin, card.left - 110),
-        top: Math.max(margin, card.top - 85),
-        right: Math.min(width - margin, card.right + 110),
-        bottom: Math.min(height - margin, card.bottom + 85)
-      };
+      const margin = 14;
+      const gap = 14;
+      const zones = [
+        { left: margin, top: margin, right: width - margin, bottom: Math.max(margin, card.top - gap) },
+        { left: margin, top: Math.min(height - margin, card.bottom + gap), right: width - margin, bottom: height - margin },
+        { left: margin, top: margin, right: Math.max(margin, card.left - gap), bottom: height - margin },
+        { left: Math.min(width - margin, card.right + gap), top: margin, right: width - margin, bottom: height - margin }
+      ];
+      return zones.filter(z => z.right - z.left >= noButton.offsetWidth && z.bottom - z.top >= noButton.offsetHeight);
     }
 
     function placeNoButton(x, y) {
@@ -132,23 +133,40 @@
     }
 
     function clampNoButton() {
-      const bounds = getPlayBounds();
+      const zones = getPlayZones();
+      if (!zones.length) return;
       const rect = noButton.getBoundingClientRect();
-      const maxX = Math.max(bounds.left, bounds.right - rect.width);
-      const maxY = Math.max(bounds.top, bounds.bottom - rect.height);
-      placeNoButton(
-        Math.max(bounds.left, Math.min(rect.left, maxX)),
-        Math.max(bounds.top, Math.min(rect.top, maxY))
-      );
+      // Keep the current position if it fits a safe zone; otherwise use the
+      // nearest available zone rather than allowing overlap with the card.
+      let best = null;
+      let bestDistance = Infinity;
+      for (const zone of zones) {
+        const maxX = zone.right - rect.width;
+        const maxY = zone.bottom - rect.height;
+        const x = Math.max(zone.left, Math.min(rect.left, maxX));
+        const y = Math.max(zone.top, Math.min(rect.top, maxY));
+        const distance = Math.hypot(x - rect.left, y - rect.top);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = { x, y };
+        }
+      }
+      if (best) placeNoButton(best.x, best.y);
     }
 
     function moveNoButton() {
-      const bounds = getPlayBounds();
+      const zones = getPlayZones();
+      if (!zones.length) {
+        // Small screens may have no space outside the card. In that case,
+        // stay at the default spot rather than overlapping the Yes button.
+        return;
+      }
+      const zone = zones[Math.floor(Math.random() * zones.length)];
       const rect = noButton.getBoundingClientRect();
-      const maxX = Math.max(bounds.left, bounds.right - rect.width);
-      const maxY = Math.max(bounds.top, bounds.bottom - rect.height);
-      const x = bounds.left + Math.random() * (maxX - bounds.left);
-      const y = bounds.top + Math.random() * (maxY - bounds.top);
+      const maxX = zone.right - rect.width;
+      const maxY = zone.bottom - rect.height;
+      const x = zone.left + Math.random() * Math.max(0, maxX - zone.left);
+      const y = zone.top + Math.random() * Math.max(0, maxY - zone.top);
       placeNoButton(x, y);
     }
 
