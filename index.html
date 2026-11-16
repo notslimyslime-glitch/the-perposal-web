@@ -87,11 +87,7 @@
     let running = false;
 
     document.getElementById("yes").addEventListener("click", () => {
-      heading.textContent = "YAY! 💖";
-      subtitle.textContent = "You just made this moment extra sweet.";
-      sticker.textContent = "🥰";
-      message.textContent = "Thanks for making me smile!";
-      noButton.style.display = "none";
+      window.location.href = "thankyou.html";
     });
 
     function sayNo() {
