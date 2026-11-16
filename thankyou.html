@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#5b182b" />
   <script>
-    // The thank-you page is a one-time destination. Refreshing or opening it
-    // directly sends the visitor back to the Yes/No question.
-    if (sessionStorage.getItem("thankyou-entry") !== "yes") {
-      window.location.replace("index.html");
+    // Allow the one-time URL created by the Yes button, then clean it.
+    // Refreshing the clean thank-you URL returns to the question page.
+    const entry = new URLSearchParams(window.location.search).get("from");
+    if (entry === "yes") {
+      window.history.replaceState(null, "", window.location.pathname);
     } else {
-      sessionStorage.removeItem("thankyou-entry");
+      window.location.replace("index.html");
     }
   </script>
   <title>Thank You! 💗</title>
