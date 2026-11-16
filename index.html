@@ -68,6 +68,13 @@
     @keyframes twinkle { from { opacity:.35; transform:scale(.75) rotate(-12deg); } to { opacity:1; transform:scale(1.2) rotate(12deg); } }
     @media (max-width:390px) { .thanks-card { padding:30px 18px; } .photo-gallery { gap:14px 10px; } .photo-frame { padding:6px 6px 24px; } }
 
+
+    #surprise-screen { display:none; position:fixed; inset:0; z-index:30; overflow:auto; place-items:center; padding:28px 16px; color:var(--wine); background:linear-gradient(145deg,#6e2036,#5b182b 55%,#35101e); }
+    #surprise-screen.active { display:grid; }
+    .surprise-card { margin:auto; }
+    .surprise-card .photo-gallery { display:grid; }
+    .surprise-card .gallery-note { display:block; }
+    .back-to-thanks { margin-top:22px; background:#9d5368; }
     .compliment-trigger { display:block; margin:22px auto 0; padding:13px 22px; border:2px solid #edbdc8; border-radius:999px; color:var(--wine); background:#ffe8ed; font:800 14px "Trebuchet MS","Segoe UI",sans-serif; box-shadow:0 5px 0 #e7b3bf; }
     .compliment-trigger:hover { background:#ffdae4; }
     .compliment-area { display:none; margin:24px auto 4px; padding:18px 12px 8px; border-radius:22px; background:linear-gradient(180deg,#fff0f2,#fff9f4); }
@@ -129,7 +136,15 @@
       <p class="thanks-poem">A little yes, a brighter day,<br>A thousand smiles along the way.<br>May happy moments find you there,<br>Like little stars tucked everywhere. ✨</p>
       <img class="thanks-gif" src="200.gif" alt="Cute happy crying face making a heart with its hands">
       <p class="thanks-poem">Sending you a pocketful of joy! 🌷</p>
-      <button class="surprise" id="surpriseButton" type="button">A little surprise ✨</button>
+      <button class="surprise" id="surpriseButton" type="button">Explore surprises 🎁</button>
+    </main>
+  </section>
+
+  <section id="surprise-screen" aria-live="polite">
+    <main class="thanks-card surprise-card">
+      <p class="eyebrow">a little box of happy things</p>
+      <h2>Surprises! 🎀</h2>
+      <p class="thanks-poem">A few memories, a few kind words,<br>and lots of little reasons to smile. 💗</p>
       <div class="photo-gallery" id="photoGallery" aria-label="Our favourite memories">
         <span class="photo-sparkle one">✦</span><span class="photo-sparkle two">♡</span>
         <figure class="photo-frame"><img src="36bb9d19-e85d-4857-8b80-d8f01a630169.jpg" alt="A lovely memory" loading="lazy"><figcaption>little moments ♡</figcaption></figure>
@@ -149,6 +164,7 @@
         <p class="compliment-message" id="complimentMessage" aria-live="polite">You're one of those people who make ordinary days feel special. 💗</p>
         <button class="another-compliment" id="anotherCompliment" type="button">Pick another note ✨</button>
       </section>
+      <button class="surprise back-to-thanks" id="backToThanks" type="button">Back to Thank You 💗</button>
     </main>
   </section>
   <script>
@@ -165,10 +181,15 @@
       document.getElementById("thankyou-screen").classList.add("active");
     });
     document.getElementById("surpriseButton").addEventListener("click", () => {
-      document.getElementById("surpriseNote").hidden = false;
+      document.getElementById("thankyou-screen").classList.remove("active");
+      document.getElementById("surprise-screen").classList.add("active");
       document.getElementById("photoGallery").classList.add("show");
-      document.getElementById("surpriseButton").textContent = "Our little memories 💗";
-    }, { once:true });
+      document.getElementById("surpriseNote").hidden = false;
+    });
+    document.getElementById("backToThanks").addEventListener("click", () => {
+      document.getElementById("surprise-screen").classList.remove("active");
+      document.getElementById("thankyou-screen").classList.add("active");
+    });
     const compliments = [
       "You make ordinary days feel a little more special. 💗",
       "Your smile has a way of making people feel welcome. 🌷",
