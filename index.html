@@ -102,43 +102,47 @@
       noButton.style.display = "none";
     }
 
-    function getVisibleBounds() {
+    function getPlayBounds() {
+      // Create an invisible movement zone around the card, then keep it inside
+      // the visible browser area on every screen size.
+      const card = document.querySelector(".card").getBoundingClientRect();
       const viewport = window.visualViewport;
-      const width = Math.min(document.documentElement.clientWidth, window.innerWidth, viewport ? viewport.width : Infinity);
-      const height = Math.min(document.documentElement.clientHeight, window.innerHeight, viewport ? viewport.height : Infinity);
+      const viewLeft = viewport ? viewport.offsetLeft : 0;
+      const viewTop = viewport ? viewport.offsetTop : 0;
+      const viewRight = viewLeft + Math.min(document.documentElement.clientWidth, window.innerWidth, viewport ? viewport.width : Infinity);
+      const viewBottom = viewTop + Math.min(document.documentElement.clientHeight, window.innerHeight, viewport ? viewport.height : Infinity);
+      const horizontalRoom = Math.max(0, Math.min(card.left - viewLeft, viewRight - card.right));
+      const verticalRoom = Math.max(0, Math.min(card.top - viewTop, viewBottom - card.bottom));
+      const padX = Math.min(140, horizontalRoom);
+      const padY = Math.min(90, verticalRoom);
       return {
-        left: viewport ? viewport.offsetLeft : 0,
-        top: viewport ? viewport.offsetTop : 0,
-        right: (viewport ? viewport.offsetLeft : 0) + width,
-        bottom: (viewport ? viewport.offsetTop : 0) + height
+        left: Math.max(viewLeft + 12, card.left - padX),
+        top: Math.max(viewTop + 12, card.top - padY),
+        right: Math.min(viewRight - 12, card.right + padX),
+        bottom: Math.min(viewBottom - 12, card.bottom + padY)
       };
     }
 
     function keepButtonInView() {
-      const bounds = getVisibleBounds();
-      const margin = 12;
+      const bounds = getPlayBounds();
       const rect = noButton.getBoundingClientRect();
-      const maxX = Math.max(bounds.left + margin, bounds.right - rect.width - margin);
-      const maxY = Math.max(bounds.top + margin, bounds.bottom - rect.height - margin);
-      const x = Math.min(Math.max(rect.left, bounds.left + margin), maxX);
-      const y = Math.min(Math.max(rect.top, bounds.top + margin), maxY);
-      noButton.style.left = `${Math.round(x)}px`;
-      noButton.style.top = `${Math.round(y)}px`;
+      const minX = bounds.left;
+      const minY = bounds.top;
+      const maxX = Math.max(minX, bounds.right - rect.width);
+      const maxY = Math.max(minY, bounds.bottom - rect.height);
+      noButton.style.left = `${Math.round(Math.min(Math.max(rect.left, minX), maxX))}px`;
+      noButton.style.top = `${Math.round(Math.min(Math.max(rect.top, minY), maxY))}px`;
     }
 
     function moveNoButton() {
-      const bounds = getVisibleBounds();
-      const margin = 12;
+      const bounds = getPlayBounds();
       const rect = noButton.getBoundingClientRect();
-      const maxX = Math.max(bounds.left + margin, bounds.right - rect.width - margin);
-      const maxY = Math.max(bounds.top + margin, bounds.bottom - rect.height - margin);
-      const minX = bounds.left + margin;
-      const minY = bounds.top + margin;
-      const nextX = minX + Math.random() * Math.max(0, maxX - minX);
-      const nextY = minY + Math.random() * Math.max(0, maxY - minY);
-      noButton.style.left = `${Math.round(nextX)}px`;
-      noButton.style.top = `${Math.round(nextY)}px`;
-      requestAnimationFrame(keepButtonInView);
+      const minX = bounds.left;
+      const minY = bounds.top;
+      const maxX = Math.max(minX, bounds.right - rect.width);
+      const maxY = Math.max(minY, bounds.bottom - rect.height);
+      noButton.style.left = `${Math.round(minX + Math.random() * (maxX - minX))}px`;
+      noButton.style.top = `${Math.round(minY + Math.random() * (maxY - minY))}px`;
     }
 
     noButton.addEventListener("click", () => {
