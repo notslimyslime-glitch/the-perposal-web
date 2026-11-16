@@ -75,6 +75,11 @@
     .surprise-card .photo-gallery { display:grid; }
     .surprise-card .gallery-note { display:block; }
     .back-to-thanks { margin-top:22px; background:#9d5368; }
+
+    #jar-screen { display:none; position:fixed; inset:0; z-index:40; overflow:auto; place-items:center; padding:28px 16px; color:var(--wine); background:linear-gradient(145deg,#6e2036,#5b182b 55%,#35101e); }
+    #jar-screen.active { display:grid; }
+    .jar-page-card { margin:auto; }
+    .jar-page-card .compliment-area { display:block; margin-top:8px; }
     .compliment-trigger { display:block; margin:22px auto 0; padding:13px 22px; border:2px solid #edbdc8; border-radius:999px; color:var(--wine); background:#ffe8ed; font:800 14px "Trebuchet MS","Segoe UI",sans-serif; box-shadow:0 5px 0 #e7b3bf; }
     .compliment-trigger:hover { background:#ffdae4; }
     .compliment-area { display:none; margin:24px auto 4px; padding:18px 12px 8px; border-radius:22px; background:linear-gradient(180deg,#fff0f2,#fff9f4); }
@@ -155,7 +160,16 @@
       </div>
       <p class="gallery-note" id="surpriseNote" hidden>You deserve all the happy little things! 💖</p>
       <button class="compliment-trigger" id="complimentTrigger" type="button">Some compliments by me 💌</button>
-      <section class="compliment-area" id="complimentArea" aria-label="A jar of compliments">
+      <button class="surprise back-to-thanks" id="backToThanks" type="button">Back to Thank You 💗</button>
+    </main>
+  </section>
+
+  <section id="jar-screen" aria-live="polite">
+    <main class="thanks-card jar-page-card">
+      <p class="eyebrow">a little jar of kind words</p>
+      <h2>Some compliments by me 💌</h2>
+      <p class="thanks-poem">A little note, picked just for you. ♡</p>
+      <section class="compliment-area open" id="complimentArea" aria-label="A jar of compliments">
         <div class="jar-wrap" aria-hidden="true">
           <div class="jar-lid"></div>
           <div class="jar-glass"><div class="jar-paper">for you</div></div>
@@ -163,7 +177,7 @@
         <p class="compliment-message" id="complimentMessage" aria-live="polite">You're one of those people who make ordinary days feel special. 💗</p>
         <button class="another-compliment" id="anotherCompliment" type="button">Pick another note ✨</button>
       </section>
-      <button class="surprise back-to-thanks" id="backToThanks" type="button">Back to Thank You 💗</button>
+      <button class="surprise back-to-thanks" id="backToSurprises" type="button">Back to Surprises 🎀</button>
     </main>
   </section>
   <script>
@@ -209,10 +223,13 @@
       note.animate([{ opacity: 0, transform: "translateY(8px) scale(.97)" }, { opacity: 1, transform: "translateY(0) scale(1)" }], { duration: 350, easing: "ease-out" });
     }
     document.getElementById("complimentTrigger").addEventListener("click", () => {
-      const area = document.getElementById("complimentArea");
-      area.classList.add("open");
+      document.getElementById("surprise-screen").classList.remove("active");
+      document.getElementById("jar-screen").classList.add("active");
       showCompliment();
-      document.getElementById("complimentTrigger").textContent = "A jar full of kind words 💗";
+    });
+    document.getElementById("backToSurprises").addEventListener("click", () => {
+      document.getElementById("jar-screen").classList.remove("active");
+      document.getElementById("surprise-screen").classList.add("active");
     });
     document.getElementById("anotherCompliment").addEventListener("click", showCompliment);
 
