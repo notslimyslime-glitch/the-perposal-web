@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#5b182b" />
+  <script>
+    // The thank-you page is a one-time destination. Refreshing or opening it
+    // directly sends the visitor back to the Yes/No question.
+    if (sessionStorage.getItem("thankyou-entry") !== "yes") {
+      window.location.replace("index.html");
+    } else {
+      sessionStorage.removeItem("thankyou-entry");
+    }
+  </script>
   <title>Thank You! 💗</title>
   <style>
     :root { --wine:#5b182b; --cream:#fff8f1; --pink:#f3a8ba; }
