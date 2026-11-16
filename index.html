@@ -168,9 +168,16 @@
           // Keep the button at its original spot for the first running frame.
           const original = noButton.getBoundingClientRect();
           running = true;
+
+          // IMPORTANT: .card has a CSS transform animation. A fixed-position
+          // child of a transformed element is positioned relative to that card,
+          // not the browser window. Move the button to <body> before using
+          // viewport coordinates so its bounds are measured correctly.
+          document.body.appendChild(noButton);
           noButton.classList.add("running");
           noButton.style.left = `${original.left}px`;
           noButton.style.top = `${original.top}px`;
+
           requestAnimationFrame(() => {
             clampNoButton();
             moveNoButton();
