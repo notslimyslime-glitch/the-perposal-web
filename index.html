@@ -87,9 +87,8 @@
     let running = false;
 
     document.getElementById("yes").addEventListener("click", () => {
-      // A one-time pass lets the thank-you page open only from this Yes click.
-      sessionStorage.setItem("thankyou-entry", "yes");
-      window.location.href = "thankyou.html";
+      // Open the celebration in a fresh tab directly from the click.
+      window.open("thankyou.html?from=yes", "_blank");
     });
 
     function sayNo() {
