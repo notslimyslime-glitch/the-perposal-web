@@ -50,6 +50,8 @@
     }
     #no.running {
       position:fixed; z-index:5; margin:0;
+      min-width:min(116px,calc(100vw - 16px)); max-width:calc(100vw - 16px);
+      padding-left:12px; padding-right:12px;
       transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1),transform .2s ease;
       box-shadow:0 0 0 4px rgba(255,213,223,.55),0 0 24px 8px rgba(255,170,195,.95);
     }
@@ -123,8 +125,8 @@
         }
         const maxX = Math.max(8, window.innerWidth - noButton.offsetWidth - 8);
         const maxY = Math.max(8, window.innerHeight - noButton.offsetHeight - 8);
-        noButton.style.left = `${Math.floor(Math.random() * maxX)}px`;
-        noButton.style.top = `${Math.floor(Math.random() * maxY)}px`;
+        noButton.style.left = `${Math.floor(Math.random() * (maxX + 1))}px`;
+        noButton.style.top = `${Math.floor(Math.random() * (maxY + 1))}px`;
       } else {
         sayNo();
       }
