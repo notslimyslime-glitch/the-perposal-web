@@ -49,6 +49,24 @@
     .thanks-poem { margin:14px auto 20px; color:#81515b; font:18px/1.75 Georgia,serif; }
     .thanks-gif { display:block; width:min(100%,230px); max-height:220px; object-fit:contain; margin:0 auto 8px; border-radius:18px; }
     .surprise { margin-top:14px; padding:13px 24px; border:0; border-radius:999px; color:white; background:var(--wine); font:800 15px "Trebuchet MS","Segoe UI",sans-serif; cursor:pointer; }
+    .surprise { margin-top:14px; padding:13px 24px; border:0; border-radius:999px; color:white; background:var(--wine); font:800 15px "Trebuchet MS","Segoe UI",sans-serif; cursor:pointer; }
+    .photo-gallery { display:none; margin:24px auto 4px; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 14px; }
+    .photo-gallery.show { display:grid; }
+    .photo-frame { position:relative; margin:0; padding:8px 8px 27px; background:#fff; border:1px solid #f1d6d9; border-radius:5px; box-shadow:0 7px 18px rgba(70,20,35,.16); opacity:0; transform:translateY(22px) rotate(var(--tilt)); animation:photo-pop .65s cubic-bezier(.2,.8,.2,1) forwards; }
+    .photo-frame:nth-child(1) { --tilt:-3deg; animation-delay:.05s; }
+    .photo-frame:nth-child(2) { --tilt:2.5deg; animation-delay:.16s; }
+    .photo-frame:nth-child(3) { --tilt:2deg; animation-delay:.27s; }
+    .photo-frame:nth-child(4) { --tilt:-2.5deg; animation-delay:.38s; }
+    .photo-frame:nth-child(5) { --tilt:-1deg; animation-delay:.49s; grid-column:1 / -1; width:68%; justify-self:center; }
+    .photo-frame img { display:block; width:100%; aspect-ratio:3 / 4; object-fit:cover; border-radius:2px; }
+    .photo-frame figcaption { position:absolute; bottom:6px; left:4px; right:4px; color:#9b6571; font:italic 12px Georgia,serif; text-align:center; }
+    .gallery-note { margin:18px 0 0; color:#a65a6b; font:italic 15px/1.6 Georgia,serif; }
+    .photo-sparkle { position:absolute; color:#e99aaa; pointer-events:none; animation:twinkle 1.8s ease-in-out infinite alternate; }
+    .photo-sparkle.one { top:5px; right:9%; font-size:23px; }
+    .photo-sparkle.two { bottom:8px; left:5%; font-size:18px; animation-delay:.6s; }
+    @keyframes photo-pop { to { opacity:1; transform:translateY(0) rotate(var(--tilt)); } }
+    @keyframes twinkle { from { opacity:.35; transform:scale(.75) rotate(-12deg); } to { opacity:1; transform:scale(1.2) rotate(12deg); } }
+    @media (max-width:390px) { .thanks-card { padding:30px 18px; } .photo-gallery { gap:14px 10px; } .photo-frame { padding:6px 6px 24px; } }
     .balloon { position:fixed; z-index:1; bottom:-130px; width:34px; height:44px; border-radius:50% 50% 46% 46%; opacity:0; pointer-events:none; animation:float-up 5.5s ease-in forwards; }
     .balloon::after { content:""; position:absolute; left:50%; top:42px; width:1px; height:38px; background:rgba(255,255,255,.65); }
     .b1 { left:8%; background:#f3a8ba; animation-delay:.1s; } .b2 { left:23%; background:#f6d28c; animation-delay:.45s; }
@@ -97,7 +115,15 @@
       <img class="thanks-gif" src="200.gif" alt="Cute happy crying face making a heart with its hands">
       <p class="thanks-poem">Sending you a pocketful of joy! 🌷</p>
       <button class="surprise" id="surpriseButton" type="button">A little surprise ✨</button>
-      <p id="surpriseNote" hidden>You deserve all the happy little things! 💖</p>
+      <div class="photo-gallery" id="photoGallery" aria-label="Our favourite memories">
+        <span class="photo-sparkle one">✦</span><span class="photo-sparkle two">♡</span>
+        <figure class="photo-frame"><img src="photo1.jpg" alt="A lovely memory" loading="lazy"><figcaption>little moments ♡</figcaption></figure>
+        <figure class="photo-frame"><img src="photo2.jpg" alt="A happy memory" loading="lazy"><figcaption>pretty smiles ✨</figcaption></figure>
+        <figure class="photo-frame"><img src="photo3.jpg" alt="A fun memory" loading="lazy"><figcaption>the silly days 🌷</figcaption></figure>
+        <figure class="photo-frame"><img src="photo4.jpg" alt="A sweet memory" loading="lazy"><figcaption>core memories 💗</figcaption></figure>
+        <figure class="photo-frame"><img src="photo5.jpg" alt="One more favourite memory" loading="lazy"><figcaption>one for the scrapbook ♡</figcaption></figure>
+      </div>
+      <p class="gallery-note" id="surpriseNote" hidden>You deserve all the happy little things! 💖</p>
     </main>
   </section>
   <script>
@@ -115,7 +141,8 @@
     });
     document.getElementById("surpriseButton").addEventListener("click", () => {
       document.getElementById("surpriseNote").hidden = false;
-      document.getElementById("surpriseButton").textContent = "Surprise opened! 💗";
+      document.getElementById("photoGallery").classList.add("show");
+      document.getElementById("surpriseButton").textContent = "Our little memories 💗";
     }, { once:true });
     document.querySelectorAll("#thankyou-screen .balloon").forEach(balloon => {
       balloon.addEventListener("animationend", () => balloon.remove(), { once:true });
