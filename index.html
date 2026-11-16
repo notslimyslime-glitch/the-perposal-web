@@ -103,35 +103,33 @@
     }
 
     function getPlayBounds() {
-      // Create an invisible movement zone around the card, then keep it inside
-      // the visible browser area on every screen size.
+      // Fixed-position coordinates use the layout viewport. Keep a safe margin
+      // and let the invisible play zone extend around the card, never past it.
+      const width = document.documentElement.clientWidth;
+      const height = document.documentElement.clientHeight;
       const card = document.querySelector(".card").getBoundingClientRect();
-      const viewport = window.visualViewport;
-      const viewLeft = viewport ? viewport.offsetLeft : 0;
-      const viewTop = viewport ? viewport.offsetTop : 0;
-      const viewRight = viewLeft + Math.min(document.documentElement.clientWidth, window.innerWidth, viewport ? viewport.width : Infinity);
-      const viewBottom = viewTop + Math.min(document.documentElement.clientHeight, window.innerHeight, viewport ? viewport.height : Infinity);
-      const horizontalRoom = Math.max(0, Math.min(card.left - viewLeft, viewRight - card.right));
-      const verticalRoom = Math.max(0, Math.min(card.top - viewTop, viewBottom - card.bottom));
-      const padX = Math.min(140, horizontalRoom);
-      const padY = Math.min(90, verticalRoom);
+      const margin = 18;
+      const zonePaddingX = 120;
+      const zonePaddingY = 90;
       return {
-        left: Math.max(viewLeft + 12, card.left - padX),
-        top: Math.max(viewTop + 12, card.top - padY),
-        right: Math.min(viewRight - 12, card.right + padX),
-        bottom: Math.min(viewBottom - 12, card.bottom + padY)
+        left: Math.max(margin, card.left - zonePaddingX),
+        top: Math.max(margin, card.top - zonePaddingY),
+        right: Math.min(width - margin, card.right + zonePaddingX),
+        bottom: Math.min(height - margin, card.bottom + zonePaddingY)
       };
     }
 
-    function keepButtonInView() {
+    function clampNoButton() {
       const bounds = getPlayBounds();
       const rect = noButton.getBoundingClientRect();
       const minX = bounds.left;
       const minY = bounds.top;
       const maxX = Math.max(minX, bounds.right - rect.width);
       const maxY = Math.max(minY, bounds.bottom - rect.height);
-      noButton.style.left = `${Math.round(Math.min(Math.max(rect.left, minX), maxX))}px`;
-      noButton.style.top = `${Math.round(Math.min(Math.max(rect.top, minY), maxY))}px`;
+      const x = Math.max(minX, Math.min(rect.left, maxX));
+      const y = Math.max(minY, Math.min(rect.top, maxY));
+      noButton.style.left = `${Math.round(x)}px`;
+      noButton.style.top = `${Math.round(y)}px`;
     }
 
     function moveNoButton() {
@@ -141,8 +139,11 @@
       const minY = bounds.top;
       const maxX = Math.max(minX, bounds.right - rect.width);
       const maxY = Math.max(minY, bounds.bottom - rect.height);
-      noButton.style.left = `${Math.round(minX + Math.random() * (maxX - minX))}px`;
-      noButton.style.top = `${Math.round(minY + Math.random() * (maxY - minY))}px`;
+      const x = minX + Math.random() * (maxX - minX);
+      const y = minY + Math.random() * (maxY - minY);
+      noButton.style.left = `${Math.round(x)}px`;
+      noButton.style.top = `${Math.round(y)}px`;
+      requestAnimationFrame(clampNoButton);
     }
 
     noButton.addEventListener("click", () => {
@@ -168,27 +169,22 @@
           const original = noButton.getBoundingClientRect();
           running = true;
           noButton.classList.add("running");
-          noButton.style.left = `${Math.max(12, Math.min(original.left, document.documentElement.clientWidth - noButton.offsetWidth - 12))}px`;
-          noButton.style.top = `${Math.max(12, Math.min(original.top, document.documentElement.clientHeight - noButton.offsetHeight - 12))}px`;
-          requestAnimationFrame(moveNoButton);
+          noButton.style.left = `${original.left}px`;
+          noButton.style.top = `${original.top}px`;
+          requestAnimationFrame(() => {
+            clampNoButton();
+            moveNoButton();
+          });
         } else {
           moveNoButton();
         }
       }
     });
 
-    // Re-clamp against the visible browser area after resizing or zooming.
+    // Keep the button within the card's invisible play zone after resizing.
     window.addEventListener("resize", () => {
-      if (running) requestAnimationFrame(keepButtonInView);
+      if (running) requestAnimationFrame(clampNoButton);
     });
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", () => {
-        if (running) requestAnimationFrame(keepButtonInView);
-      });
-      window.visualViewport.addEventListener("scroll", () => {
-        if (running) requestAnimationFrame(keepButtonInView);
-      });
-    }
   </script>
 </body>
 </html>
