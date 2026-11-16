@@ -42,6 +42,18 @@
     button:hover { transform:translateY(-3px); }
     button:focus-visible { outline:3px solid #d17a8d; outline-offset:4px; }
     #yes { color:white; background:var(--wine); box-shadow:0 5px 0 var(--deep-wine); }
+    #thankyou-screen { display:none; position:fixed; inset:0; z-index:20; overflow:auto; place-items:center; padding:28px 16px; color:var(--wine); background:linear-gradient(145deg,#6e2036,#5b182b 55%,#35101e); }
+    #thankyou-screen.active { display:grid; }
+    .thanks-card { position:relative; z-index:2; width:min(100%,520px); padding:34px 28px; text-align:center; background:var(--cream); border:3px solid #ffe1e1; border-radius:28px; box-shadow:0 24px 70px rgba(25,0,10,.35); animation:pop-in .7s ease both; }
+    .thanks-card h2 { margin:8px 0 12px; font: bold clamp(32px,8vw,46px)/1.12 Georgia,serif; }
+    .thanks-poem { margin:14px auto 20px; color:#81515b; font:18px/1.75 Georgia,serif; }
+    .thanks-gif { display:block; width:min(100%,230px); max-height:220px; object-fit:contain; margin:0 auto 8px; border-radius:18px; }
+    .surprise { margin-top:14px; padding:13px 24px; border:0; border-radius:999px; color:white; background:var(--wine); font:800 15px "Trebuchet MS","Segoe UI",sans-serif; cursor:pointer; }
+    .balloon { position:fixed; z-index:1; bottom:-130px; width:34px; height:44px; border-radius:50% 50% 46% 46%; opacity:0; pointer-events:none; animation:float-up 5.5s ease-in forwards; }
+    .balloon::after { content:""; position:absolute; left:50%; top:42px; width:1px; height:38px; background:rgba(255,255,255,.65); }
+    .b1 { left:8%; background:#f3a8ba; animation-delay:.1s; } .b2 { left:23%; background:#f6d28c; animation-delay:.45s; }
+    .b3 { left:43%; background:#d9a6d8; animation-delay:.2s; } .b4 { left:66%; background:#f3a8ba; animation-delay:.7s; } .b5 { left:86%; background:#f6d28c; animation-delay:.35s; }
+    @keyframes float-up { 0% { transform:translateY(0) rotate(-8deg); opacity:0; } 12% { opacity:.95; } 100% { transform:translateY(-120vh) rotate(14deg); opacity:0; } }
     #yes:hover { background:#76243c; }
     #no {
       color:#64152e; background:#ffd5df; border:2px solid #f3a8ba;
@@ -65,7 +77,7 @@
   </style>
 </head>
 <body>
-  <main class="card">
+  <main class="card" id="question-screen">
     <div class="sticker" id="sticker" aria-label="Cute teddy bear sticker" role="img">🧸</div>
     <p class="eyebrow">a tiny question</p>
     <h1 id="heading">Will you say yes?</h1>
@@ -77,6 +89,17 @@
     <p id="message" role="status" aria-live="polite"></p>
     <p class="tiny-note">MADE WITH A LITTLE BIT OF HEART ✦</p>
   </main>
+  <section id="thankyou-screen" aria-live="polite">
+    <div class="balloon b1"></div><div class="balloon b2"></div><div class="balloon b3"></div><div class="balloon b4"></div><div class="balloon b5"></div>
+    <main class="thanks-card">
+      <p class="eyebrow">a little moment to remember</p><h2>Thank You! 💗</h2>
+      <p class="thanks-poem">A little yes, a brighter day,<br>A thousand smiles along the way.<br>May happy moments find you there,<br>Like little stars tucked everywhere. ✨</p>
+      <img class="thanks-gif" src="200.gif" alt="Cute happy crying face making a heart with its hands">
+      <p class="thanks-poem">Sending you a pocketful of joy! 🌷</p>
+      <button class="surprise" id="surpriseButton" type="button">A little surprise ✨</button>
+      <p id="surpriseNote" hidden>You deserve all the happy little things! 💖</p>
+    </main>
+  </section>
   <script>
     const heading = document.getElementById("heading");
     const subtitle = document.getElementById("subtitle");
@@ -87,8 +110,15 @@
     let running = false;
 
     document.getElementById("yes").addEventListener("click", () => {
-      // Open the celebration in a fresh tab directly from the click.
-      window.open("thankyou.html?from=yes", "_blank");
+      document.getElementById("question-screen").style.display = "none";
+      document.getElementById("thankyou-screen").classList.add("active");
+    });
+    document.getElementById("surpriseButton").addEventListener("click", () => {
+      document.getElementById("surpriseNote").hidden = false;
+      document.getElementById("surpriseButton").textContent = "Surprise opened! 💗";
+    }, { once:true });
+    document.querySelectorAll("#thankyou-screen .balloon").forEach(balloon => {
+      balloon.addEventListener("animationend", () => balloon.remove(), { once:true });
     });
 
     function sayNo() {
