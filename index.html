@@ -49,22 +49,14 @@
       animation:soft-glow 1.5s ease-in-out infinite alternate;
     }
     #no.running {
-      position:fixed; z-index:5; margin:0; animation:screen-zoomies 5.5s cubic-bezier(.45,0,.55,1) forwards;
+      position:fixed; z-index:5; margin:0;
+      transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1),transform .2s ease;
       box-shadow:0 0 0 4px rgba(255,213,223,.55),0 0 24px 8px rgba(255,170,195,.95);
     }
     #message { min-height:25px; margin:23px 0 0; color:#8e4055; font-family:Georgia,serif; font-size:17px; font-weight:bold; }
     .tiny-note { margin:12px 0 0; color:#b18a8f; font-size:11px; letter-spacing:.08em; }
     @keyframes pop-in { from { opacity:0; transform:translateY(18px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
     @keyframes soft-glow { from { box-shadow:0 0 0 2px rgba(255,213,223,.3),0 5px 0 #dc91a4,0 0 10px rgba(255,175,197,.55); } to { box-shadow:0 0 0 5px rgba(255,213,223,.55),0 5px 0 #dc91a4,0 0 24px rgba(255,175,197,1); } }
-    @keyframes screen-zoomies {
-      0% { left:5vw; top:8vh; }
-      18% { left:72vw; top:12vh; }
-      36% { left:68vw; top:76vh; }
-      54% { left:8vw; top:68vh; }
-      72% { left:42vw; top:18vh; }
-      88% { left:78vw; top:48vh; }
-      100% { left:calc(50% - 58px); top:calc(50% + 150px); }
-    }
     @media (max-width:380px) { .card { padding:36px 20px 29px; } .sticker { width:122px; height:122px; font-size:70px; } }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
   </style>
@@ -107,19 +99,7 @@
       noButton.style.display = "none";
     }
 
-    noButton.addEventListener("animationend", (event) => {
-      if (event.animationName === "screen-zoomies") {
-        running = false;
-        noButton.classList.remove("running");
-        noButton.style.position = "static";
-        noButton.style.left = "";
-        noButton.style.top = "";
-        message.textContent = "Okay, the zoomies are over. You can click No now. 💗";
-      }
-    });
-
     noButton.addEventListener("click", () => {
-      if (running) return;
       noClicks += 1;
       const screens = [
         ["Are you sure? 🥺", "Just checking! Take your time.", "🐻"],
@@ -132,13 +112,19 @@
         subtitle.textContent = screen[1];
         sticker.textContent = screen[2];
         message.textContent = "You can still choose No whenever you like.";
-      } else if (noClicks === 4) {
+      } else if (noClicks >= 4 && noClicks < 9) {
         heading.textContent = "Haha, catch me if you can! 😄";
-        subtitle.textContent = "The No button has got the zoomies!";
+        subtitle.textContent = "The No button only moves when you click it!";
         sticker.textContent = "🙈";
-        message.textContent = "It's doing one little lap around the screen...";
-        running = true;
-        noButton.classList.add("running");
+        message.textContent = "Boop! It moved. Try catching it again!";
+        if (!running) {
+          running = true;
+          noButton.classList.add("running");
+        }
+        const maxX = Math.max(8, window.innerWidth - noButton.offsetWidth - 8);
+        const maxY = Math.max(8, window.innerHeight - noButton.offsetHeight - 8);
+        noButton.style.left = `${Math.floor(Math.random() * maxX)}px`;
+        noButton.style.top = `${Math.floor(Math.random() * maxY)}px`;
       } else {
         sayNo();
       }
