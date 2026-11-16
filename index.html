@@ -50,7 +50,7 @@
     }
     #no.running {
       position:fixed; z-index:5; margin:0; transform:none;
-      min-width:min(116px,calc(100vw - 24px)); max-width:calc(100vw - 24px);
+      width:min(116px,calc(100vw - 24px)); min-width:0; max-width:calc(100vw - 24px);
       padding-left:12px; padding-right:12px;
       transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1);
       box-shadow:0 0 0 4px rgba(255,213,223,.55),0 0 24px 8px rgba(255,170,195,.95);
@@ -102,19 +102,43 @@
       noButton.style.display = "none";
     }
 
-    function moveNoButton() {
-      // Measure the actual Chrome content viewport in CSS pixels.
-      const viewportWidth = document.documentElement.clientWidth;
-      const viewportHeight = document.documentElement.clientHeight;
+    function getVisibleBounds() {
+      const viewport = window.visualViewport;
+      const width = Math.min(document.documentElement.clientWidth, window.innerWidth, viewport ? viewport.width : Infinity);
+      const height = Math.min(document.documentElement.clientHeight, window.innerHeight, viewport ? viewport.height : Infinity);
+      return {
+        left: viewport ? viewport.offsetLeft : 0,
+        top: viewport ? viewport.offsetTop : 0,
+        right: (viewport ? viewport.offsetLeft : 0) + width,
+        bottom: (viewport ? viewport.offsetTop : 0) + height
+      };
+    }
+
+    function keepButtonInView() {
+      const bounds = getVisibleBounds();
       const margin = 12;
-      const buttonWidth = noButton.offsetWidth;
-      const buttonHeight = noButton.offsetHeight;
-      const maxX = Math.max(margin, viewportWidth - buttonWidth - margin);
-      const maxY = Math.max(margin, viewportHeight - buttonHeight - margin);
-      const nextX = margin + Math.random() * Math.max(0, maxX - margin);
-      const nextY = margin + Math.random() * Math.max(0, maxY - margin);
+      const rect = noButton.getBoundingClientRect();
+      const maxX = Math.max(bounds.left + margin, bounds.right - rect.width - margin);
+      const maxY = Math.max(bounds.top + margin, bounds.bottom - rect.height - margin);
+      const x = Math.min(Math.max(rect.left, bounds.left + margin), maxX);
+      const y = Math.min(Math.max(rect.top, bounds.top + margin), maxY);
+      noButton.style.left = `${Math.round(x)}px`;
+      noButton.style.top = `${Math.round(y)}px`;
+    }
+
+    function moveNoButton() {
+      const bounds = getVisibleBounds();
+      const margin = 12;
+      const rect = noButton.getBoundingClientRect();
+      const maxX = Math.max(bounds.left + margin, bounds.right - rect.width - margin);
+      const maxY = Math.max(bounds.top + margin, bounds.bottom - rect.height - margin);
+      const minX = bounds.left + margin;
+      const minY = bounds.top + margin;
+      const nextX = minX + Math.random() * Math.max(0, maxX - minX);
+      const nextY = minY + Math.random() * Math.max(0, maxY - minY);
       noButton.style.left = `${Math.round(nextX)}px`;
       noButton.style.top = `${Math.round(nextY)}px`;
+      requestAnimationFrame(keepButtonInView);
     }
 
     noButton.addEventListener("click", () => {
@@ -149,16 +173,18 @@
       }
     });
 
-    // If Chrome is resized while the button is running, clamp it back into view.
+    // Re-clamp against the visible browser area after resizing or zooming.
     window.addEventListener("resize", () => {
-      if (!running) return;
-      const width = document.documentElement.clientWidth;
-      const height = document.documentElement.clientHeight;
-      const x = Math.max(12, Math.min(parseFloat(noButton.style.left) || 12, width - noButton.offsetWidth - 12));
-      const y = Math.max(12, Math.min(parseFloat(noButton.style.top) || 12, height - noButton.offsetHeight - 12));
-      noButton.style.left = `${x}px`;
-      noButton.style.top = `${y}px`;
+      if (running) requestAnimationFrame(keepButtonInView);
     });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", () => {
+        if (running) requestAnimationFrame(keepButtonInView);
+      });
+      window.visualViewport.addEventListener("scroll", () => {
+        if (running) requestAnimationFrame(keepButtonInView);
+      });
+    }
   </script>
 </body>
 </html>
